@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
@@ -24,4 +24,62 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+} */
+
+body {
+  background-color: #f0f0f0;
+}
+
+/* hr {
+  width: 30px;
+} */
+/* MOBILE */
+@media only screen and (max-width: 768px) {
+  .container {
+    width: 80%;
+  }
+
+  input {
+    width: 50px !important;
+    font-size: 12px;
+    padding: 1px !important;
+  }
+
+  /* hr {
+    margin: auto;
+  } */
+
+  button {
+    margin-left: -7em;
+    z-index: 100;
+  }
+
+  form {
+    margin-bottom: 60px;
+  }
+
+  .calculated-age>p {
+    font-size: 40px;
+  }
+
+  /* .error p {
+    font-size: 10px !important;
+  } */
+
+}
+
+/* TABLET */
+
+@media only screen and (min-width: 600px) {
+  input {
+    width: 95px !important;
+  }
+
+  .calculated-age p {
+    font-size: 50px !important;
+  }
+
+  button {
+    margin-left: 0;
+  }
 }

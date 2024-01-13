@@ -1,113 +1,287 @@
-import Image from 'next/image'
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
 
 export default function Home() {
+  const [day, setDay] = useState("");
+  const [month, setMonth] = useState("");
+  const [year, setYear] = useState("");
+
+  const [errors, setErrors] = useState({
+    day: "",
+    month: "",
+    year: "",
+    invalidDate: "",
+  });
+
+  const [calculatedAge, setCalculatedAge] = useState({
+    years: null,
+    months: null,
+    days: null,
+  });
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: string
+  ) => {
+    const value = e.target.value;
+
+    // ensuring the input value is a number
+    const numericValue = /^\d*$/.test(value) ? parseInt(value, 10) : "";
+
+    switch (type) {
+      case "day":
+        setDay(value === "" ? "" : isNaN(numericValue) ? day : numericValue);
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          day: "",
+          invalidDate: "",
+        }));
+        break;
+      case "month":
+        setMonth(
+          value === "" ? "" : isNaN(numericValue) ? month : numericValue
+        );
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          month: "",
+          invalidDate: "",
+        }));
+        break;
+      case "year":
+        setYear(value === "" ? "" : isNaN(numericValue) ? year : numericValue);
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          year: "",
+          invalidDate: "",
+        }));
+        break;
+      default:
+        break;
+    }
+  };
+
+  const calculateAge = () => {
+    if (day && month && year) {
+      const birthDate = new Date(year, month - 1, day);
+      const currentDate = new Date();
+
+      if (birthDate > currentDate) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          invalidDate: "Must be in the past",
+        }));
+        setCalculatedAge({
+          years: null,
+          months: null,
+          days: null,
+        });
+        return;
+      }
+
+      let ageYears = currentDate.getFullYear() - birthDate.getFullYear();
+      let ageMonths = currentDate.getMonth() - birthDate.getMonth();
+      let ageDays = currentDate.getDate() - birthDate.getDate();
+
+      if (ageDays < 0) {
+        ageMonths -= 1;
+        ageDays += 30; // Assuming a month has 30 days for simplicity
+      }
+
+      if (ageMonths < 0) {
+        ageYears -= 1;
+        ageMonths += 12;
+      }
+
+      setCalculatedAge({
+        years: ageYears,
+        months: ageMonths,
+        days: ageDays,
+      });
+    } else {
+      setCalculatedAge({
+        years: null,
+        months: null,
+        days: null,
+      });
+    }
+  };
+
+  const handleCalculateAge = () => {
+    const dayInt = parseInt(day, 10);
+    const monthInt = parseInt(month, 10);
+    const yearInt = parseInt(year, 10);
+
+    const isValidDate =
+      !isNaN(dayInt) &&
+      !isNaN(monthInt) &&
+      !isNaN(yearInt) &&
+      dayInt >= 1 &&
+      dayInt <= 31 &&
+      monthInt >= 1 &&
+      monthInt <= 12 &&
+      yearInt >= 1;
+
+    if (!day || !month || !year) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        day: day ? "" : "This field is required",
+        month: month ? "" : "This field is required",
+        year: year ? "" : "This field is required",
+        invalidDate: "",
+      }));
+    } else if (!isValidDate) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        invalidDate: "Invalid date",
+      }));
+    } else {
+      // Additional date validation
+      const maxDaysInMonth = new Date(yearInt, monthInt, 0).getDate();
+      const isValidDay = dayInt >= 1 && dayInt <= maxDaysInMonth;
+
+      if (!isValidDay) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          invalidDate: "Must be a valid date",
+        }));
+      } else {
+        setErrors({
+          day: "",
+          month: "",
+          year: "",
+          invalidDate: "",
+        });
+        calculateAge();
+      }
+    }
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <>
+      <div className="h-screen flex justify-center flex-col items-center my-auto">
+        <div className="bg-white h-[35em] w-[38%] rounded-t-lg rounded-bl-lg rounded-br-[150px] container">
+          <form action="" className="mb-[30px]">
+            <div className="flex p-8">
+              <div className="m-4">
+                <label
+                  className={`block uppercase text-sm mb-2 font-bold ${
+                    errors.day ? "text-red-500" : "text-[#555353]"
+                  }`}
+                  htmlFor="dayInput"
+                >
+                  day
+                </label>
+                <input
+                  className={`outline outline-1 ${
+                    errors.day ? "outline-red-500" : "outline-[#f0f0f0]"
+                  } rounded-sm w-[95px] h-[45px] p-[5px] placeholder:uppercase placeholder:pl-2 placeholder:font-extrabold focus:outline-[#854dff]`}
+                  type="text"
+                  name=""
+                  id="dayInput"
+                  placeholder="dd"
+                  value={day}
+                  onChange={(e) => handleInputChange(e, "day")}
+                />
+                {errors.day && (
+                  <p className="text-red-500 text-[10px] mt-[5px] italic">
+                    {errors.day}
+                  </p>
+                )}
+                {errors.invalidDate && (
+                  <p className="text-red-500 text-[10px] mt-[5px] italic error">
+                    {errors.invalidDate}
+                  </p>
+                )}
+              </div>
+              <div className="m-4">
+                <label
+                  className={`block uppercase text-sm mb-2 font-bold ${
+                    errors.month ? "text-red-500" : "text-[#555353]"
+                  }`}
+                  htmlFor="monthInput"
+                >
+                  month
+                </label>
+                <input
+                  className={`outline outline-1 ${
+                    errors.month ? "outline-red-500" : "outline-[#f0f0f0]"
+                  } rounded-sm w-[95px] h-[45px] p-[5px] placeholder:uppercase placeholder:pl-2 placeholder:font-extrabold focus:outline-[#854dff]`}
+                  type="text"
+                  name=""
+                  id="monthInput"
+                  placeholder="mm"
+                  value={month}
+                  onChange={(e) => handleInputChange(e, "month")}
+                />
+                {errors.month && (
+                  <p className="text-red-500 text-[10px] mt-[5px] italic">
+                    {errors.month}
+                  </p>
+                )}
+              </div>
+              <div className="m-4">
+                <label
+                  className={`block uppercase text-sm mb-2 font-bold ${
+                    errors.year ? "text-red-500" : "text-[#555353]"
+                  }`}
+                  htmlFor="yearInput"
+                >
+                  year
+                </label>
+                <input
+                  className={`outline outline-1 ${
+                    errors.year ? "outline-red-500" : "outline-[#f0f0f0]"
+                  } rounded-sm w-[95px] h-[45px] p-[5px] placeholder:uppercase placeholder:pl-2 placeholder:font-extrabold focus:outline-[#854dff]`}
+                  type="text"
+                  name=""
+                  id="yearInput"
+                  placeholder="yyyy"
+                  value={year}
+                  onChange={(e) => handleInputChange(e, "year")}
+                />
+                {errors.year && (
+                  <p className="text-red-500 text-[10px] mt-[5px] italic">
+                    {errors.year}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex mx-[3em]">
+              <hr className="w-[80%] relative" />
+              <button
+                type="button"
+                className="bg-[#854dff] w-[50px] h-[50px] rounded-full flex justify-center items-center mt-[-25px] hover:bg-[#141414]"
+                onClick={handleCalculateAge}
+              >
+                <Image
+                  src="/imgs/icon-arrow.svg"
+                  alt="fvyf"
+                  width={20}
+                  height={20}
+                />
+              </button>
+            </div>
+          </form>
+
+          {/* CALCULATED AGE */}
+          <div className="ml-[3em] calculated-age">
+            <p className="text-[50px] font-extrabold italic text-[#854dff]">
+              {calculatedAge.years !== null ? calculatedAge.years : "- -"}{" "}
+              <span className="text-black">years</span>
+            </p>
+            <p className="text-[50px] font-extrabold italic text-[#854dff]">
+              {calculatedAge.months !== null ? calculatedAge.months : "- -"}{" "}
+              <span className="text-black">months</span>
+            </p>
+            <p className="text-[50px] font-extrabold italic text-[#854dff]">
+              {calculatedAge.days !== null ? calculatedAge.days : "- -"}{" "}
+              <span className="text-black">days</span>
+            </p>
+          </div>
         </div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    </>
+  );
 }
