@@ -4,9 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 
 export default function Home() {
-  const [day, setDay] = useState("");
-  const [month, setMonth] = useState("");
-  const [year, setYear] = useState("");
+  const [day, setDay] = useState<string>("");
+  const [month, setMonth] = useState<string>("");
+  const [year, setYear] = useState<string>("");
 
   const [errors, setErrors] = useState({
     day: "",
@@ -15,7 +15,11 @@ export default function Home() {
     invalidDate: "",
   });
 
-  const [calculatedAge, setCalculatedAge] = useState({
+  const [calculatedAge, setCalculatedAge] = useState<{
+    years: number | null;
+    months: number | null;
+    days: number | null;
+  }>({
     years: null,
     months: null,
     days: null,
@@ -28,11 +32,19 @@ export default function Home() {
     const value = e.target.value;
 
     // ensuring the input value is a number
-    const numericValue = /^\d*$/.test(value) ? parseInt(value, 10) : "";
+    const numericValue: number | string = /^\d*$/.test(value)
+      ? parseInt(value, 10)
+      : "";
 
     switch (type) {
       case "day":
-        setDay(value === "" ? "" : isNaN(numericValue) ? day : numericValue);
+        setDay(
+          value === ""
+            ? ""
+            : isNaN(numericValue as number)
+            ? day
+            : numericValue.toString()
+        );
         setErrors((prevErrors) => ({
           ...prevErrors,
           day: "",
@@ -41,7 +53,11 @@ export default function Home() {
         break;
       case "month":
         setMonth(
-          value === "" ? "" : isNaN(numericValue) ? month : numericValue
+          value === ""
+            ? ""
+            : isNaN(numericValue as number)
+            ? month
+            : numericValue.toString()
         );
         setErrors((prevErrors) => ({
           ...prevErrors,
@@ -50,7 +66,13 @@ export default function Home() {
         }));
         break;
       case "year":
-        setYear(value === "" ? "" : isNaN(numericValue) ? year : numericValue);
+        setYear(
+          value === ""
+            ? ""
+            : isNaN(numericValue as number)
+            ? year
+            : numericValue.toString()
+        );
         setErrors((prevErrors) => ({
           ...prevErrors,
           year: "",
@@ -64,7 +86,11 @@ export default function Home() {
 
   const calculateAge = () => {
     if (day && month && year) {
-      const birthDate = new Date(year, month - 1, day);
+      const birthDate = new Date(
+        parseInt(year, 10),
+        parseInt(month, 10) - 1,
+        parseInt(day, 10)
+      );
       const currentDate = new Date();
 
       if (birthDate > currentDate) {
